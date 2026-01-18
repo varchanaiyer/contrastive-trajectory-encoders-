@@ -5,29 +5,44 @@ from typing import Dict, List, Tuple, Optional
 import gymnasium as gym
 
 # Import CARL environments with robust error handling for Colab compatibility
+# Note: We import directly from submodules to avoid CARL's __init__.py which may
+# have broken imports (e.g., CARLMarioEnv) that prevent importing anything
 try:
-    from carl.envs.gymnasium.classic_control import CARLPendulum, CARLCartPole
+    # Try the most specific path first (CARL v1.1+)
+    from carl.envs.gymnasium.classic_control.carl_pendulum import CARLPendulum
+    from carl.envs.gymnasium.classic_control.carl_cartpole import CARLCartPole
 except ImportError:
     try:
-        from carl.envs import CARLPendulum, CARLCartPole
-    except ImportError as e:
-        raise ImportError(
-            f"Failed to import CARL environments. "
-            f"Try: pip install carl-bench gymnasium. Error: {e}"
-        )
+        # Try older module structure
+        from carl.envs.gymnasium.classic_control import CARLPendulum, CARLCartPole
+    except ImportError:
+        try:
+            # Last resort - may fail due to mario import issue
+            from carl.envs import CARLPendulum, CARLCartPole
+        except ImportError as e:
+            raise ImportError(
+                f"Failed to import CARL environments. "
+                f"Try: pip install carl-bench gymnasium. Error: {e}"
+            )
 
 MUJOCO_AVAILABLE = False
 CARLAnt = None
 CARLHalfCheetah = None
 try:
-    from carl.envs.gymnasium.mujoco import CARLAnt, CARLHalfCheetah
+    # Try direct module imports to avoid broken __init__.py
+    from carl.envs.gymnasium.mujoco.carl_ant import CARLAnt
+    from carl.envs.gymnasium.mujoco.carl_halfcheetah import CARLHalfCheetah
     MUJOCO_AVAILABLE = True
 except ImportError:
     try:
-        from carl.envs import CARLAnt, CARLHalfCheetah
+        from carl.envs.gymnasium.mujoco import CARLAnt, CARLHalfCheetah
         MUJOCO_AVAILABLE = True
     except ImportError:
-        pass  # MuJoCo environments not available
+        try:
+            from carl.envs import CARLAnt, CARLHalfCheetah
+            MUJOCO_AVAILABLE = True
+        except ImportError:
+            pass  # MuJoCo environments not available
 
 
 def get_context_distributions(
