@@ -3,13 +3,31 @@
 import numpy as np
 from typing import Dict, List, Tuple, Optional
 import gymnasium as gym
-from carl.envs import CARLPendulum, CARLCartPole
+
+# Import CARL environments with robust error handling for Colab compatibility
 try:
-    from carl.envs import CARLAnt, CARLHalfCheetah
+    from carl.envs.gymnasium.classic_control import CARLPendulum, CARLCartPole
+except ImportError:
+    try:
+        from carl.envs import CARLPendulum, CARLCartPole
+    except ImportError as e:
+        raise ImportError(
+            f"Failed to import CARL environments. "
+            f"Try: pip install carl-bench gymnasium. Error: {e}"
+        )
+
+MUJOCO_AVAILABLE = False
+CARLAnt = None
+CARLHalfCheetah = None
+try:
+    from carl.envs.gymnasium.mujoco import CARLAnt, CARLHalfCheetah
     MUJOCO_AVAILABLE = True
 except ImportError:
-    MUJOCO_AVAILABLE = False
-    print("Warning: MuJoCo environments not available. Install mujoco-py for Ant/HalfCheetah.")
+    try:
+        from carl.envs import CARLAnt, CARLHalfCheetah
+        MUJOCO_AVAILABLE = True
+    except ImportError:
+        pass  # MuJoCo environments not available
 
 
 def get_context_distributions(
