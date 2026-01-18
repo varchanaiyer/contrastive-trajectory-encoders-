@@ -1,0 +1,48 @@
+# Configuration for Phase 1: Trajectory Encoder Training
+
+experiment:
+  name: "contrastive_encoder_pendulum"
+  seed: 42
+  device: "cuda"  # or "cpu"
+
+environment:
+  name: "pendulum"  # Options: pendulum, cartpole, ant
+  split: "train"
+
+data:
+  segment_length: 32
+  num_segments_per_context: 100
+  policy: "random"  # Use random policy for data collection
+  train_val_split: 0.8
+  augmentation: null  # Options: "noise", "dropout", null
+
+encoder:
+  architecture: "lstm"  # Options: "lstm", "transformer"
+  input_dim: null  # Will be inferred from environment
+  hidden_dim: 128
+  num_layers: 2
+  latent_dim: 64
+  dropout: 0.1
+
+  # Transformer-specific
+  num_heads: 4
+
+  # LSTM-specific
+  bidirectional: true
+
+loss:
+  type: "infonce"  # Options: "infonce", "triplet", "supcon"
+  temperature: 0.07
+  margin: 1.0  # For triplet loss
+
+training:
+  batch_size: 64
+  num_epochs: 100
+  learning_rate: 3.0e-4
+  weight_decay: 1.0e-5
+  eval_every: 5
+
+paths:
+  data_dir: "experiments/data"
+  checkpoint_dir: "experiments/checkpoints/encoder"
+  log_dir: "experiments/logs/encoder"

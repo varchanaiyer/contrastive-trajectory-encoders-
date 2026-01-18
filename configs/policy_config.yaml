@@ -1,0 +1,52 @@
+# Configuration for Phase 2: Context-Conditional Policy Training
+
+experiment:
+  name: "contextual_policy_pendulum"
+  seed: 42
+  device: "cuda"  # or "cpu"
+
+environment:
+  name: "pendulum"
+  train_split: "train"
+  test_split: "test"
+
+encoder:
+  checkpoint_path: "experiments/checkpoints/encoder/best_encoder.pt"
+  freeze: true
+  buffer_length: 32
+
+policy:
+  algorithm: "ppo"  # Options: "ppo", "sac"
+
+  # PPO-specific
+  n_steps: 2048
+  batch_size: 64
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.01
+  vf_coef: 0.5
+  max_grad_norm: 0.5
+
+  # SAC-specific
+  buffer_size: 1000000
+  tau: 0.005
+  train_freq: 1
+  gradient_steps: 1
+
+  # Network architecture
+  net_arch:
+    - 256
+    - 256
+  activation: "relu"
+
+training:
+  total_timesteps: 1000000
+  eval_freq: 10000
+  n_eval_episodes: 10
+  save_freq: 50000
+
+paths:
+  checkpoint_dir: "experiments/checkpoints/policy"
+  log_dir: "experiments/logs/policy"
