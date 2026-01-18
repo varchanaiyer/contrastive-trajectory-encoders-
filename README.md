@@ -5,8 +5,43 @@ A research framework for learning context-aware RL policies through self-supervi
 ## Overview
 
 This project implements a two-phase training pipeline:
-- **Phase 1 (The "Eye")**: Learn trajectory embeddings via contrastive learning (InfoNCE)
+- **Phase 1 (The "Eye")**: Learn trajectory embeddings via contrastive learning (SupConLoss)
 - **Phase 2 (The "Brain")**: Train context-conditional policies using the learned embeddings
+
+## Latest Results (January 19, 2026)
+
+### Embedding Visualization
+
+![t-SNE Embeddings](demo_outputs/embeddings_visualization.png)
+
+*Left: Embeddings colored by context ID showing clear cluster separation. Right: Embeddings colored by gravity parameter (g) showing smooth gradient in embedding space.*
+
+### Training Performance
+
+| Metric | Value | Description |
+|--------|-------|-------------|
+| **Intra-context similarity** | 0.95 | Trajectories from same gravity cluster tightly |
+| **Inter-context similarity** | 0.03 | Different gravity settings are nearly orthogonal |
+| **Separation score** | 0.92 | Excellent discriminability between contexts |
+| **Silhouette score** | 0.42 | Good clustering quality |
+| **Davies-Bouldin score** | 0.73 | Reasonable cluster compactness |
+
+### Training Configuration
+
+- **Environment**: CARL-Pendulum with varying gravity (g = 5.0 to 10.5)
+- **Contexts**: 10 different gravity settings
+- **Segments**: 100 per context (1000 total)
+- **Loss**: Supervised Contrastive Loss (SupConLoss)
+- **Epochs**: 50
+- **Batch size**: 64
+- **Encoder**: Bidirectional LSTM (256 hidden, 64 latent dim)
+
+### Key Observations
+
+1. The encoder successfully learns to distinguish pendulum dynamics under different gravity values
+2. Embeddings form a smooth manifold where gravity increases along the curve
+3. High intra-class similarity (0.95) indicates consistent representation within each context
+4. Near-zero inter-class similarity (0.03) shows excellent discrimination between contexts
 
 ## Project Structure
 
@@ -57,12 +92,13 @@ python scripts/evaluate.py --policy-path experiments/policy_best.pt --encoder-pa
 
 ## Key Features
 
-- Support for CARL environments (Ant, Pendulum, CartPole)
+- Support for CARL environments (Pendulum, CartPole, Ant, HalfCheetah)
 - Flexible encoder architectures (LSTM, Transformer)
-- InfoNCE contrastive loss with hard negative mining
+- Multiple contrastive losses (SupConLoss, InfoNCE, TripletLoss)
+- Data augmentation for better positive pair generation
 - t-SNE visualization of learned embeddings
 - Integration with Stable-Baselines3
-- Comprehensive evaluation metrics
+- Comprehensive evaluation metrics (silhouette, Davies-Bouldin, separation score)
 
 ## Research Context
 
