@@ -94,18 +94,25 @@ class EncoderTrainer:
             # Move to device
             anchor = batch['anchor'].to(self.device)
             positive = batch['positive'].to(self.device)
-            negative = batch['negative'].to(self.device)
+            context_ids = batch['context_id'].to(self.device)
 
-            # Forward pass
+            # Forward pass - encode both anchor and positive
             anchor_emb = self.encoder(anchor)
             positive_emb = self.encoder(positive)
-            negative_emb = self.encoder(negative)
 
-            # Compute loss
-            if hasattr(self.loss_fn, 'forward'):
-                # InfoNCE with explicit negatives
-                loss = self.loss_fn(anchor_emb, positive_emb, negative_emb.unsqueeze(1))
+            # Compute loss based on loss function type
+            loss_fn_name = self.loss_fn.__class__.__name__
+
+            if loss_fn_name == 'SupConLoss':
+                # SupConLoss: combine embeddings, duplicate labels
+                features = torch.cat([anchor_emb, positive_emb], dim=0)
+                labels = torch.cat([context_ids, context_ids], dim=0)
+                loss = self.loss_fn(features, labels)
+            elif loss_fn_name == 'InfoNCELoss':
+                # InfoNCE: use in-batch negatives (no explicit negatives needed)
+                loss = self.loss_fn(anchor_emb, positive_emb)
             else:
+                # Fallback: try with anchor/positive
                 loss = self.loss_fn(anchor_emb, positive_emb)
 
             # Backward pass
@@ -147,14 +154,20 @@ class EncoderTrainer:
         for batch in tqdm(self.val_loader, desc="Validation"):
             anchor = batch['anchor'].to(self.device)
             positive = batch['positive'].to(self.device)
-            negative = batch['negative'].to(self.device)
+            context_ids = batch['context_id'].to(self.device)
 
             anchor_emb = self.encoder(anchor)
             positive_emb = self.encoder(positive)
-            negative_emb = self.encoder(negative)
 
-            if hasattr(self.loss_fn, 'forward'):
-                loss = self.loss_fn(anchor_emb, positive_emb, negative_emb.unsqueeze(1))
+            # Compute loss based on loss function type
+            loss_fn_name = self.loss_fn.__class__.__name__
+
+            if loss_fn_name == 'SupConLoss':
+                features = torch.cat([anchor_emb, positive_emb], dim=0)
+                labels = torch.cat([context_ids, context_ids], dim=0)
+                loss = self.loss_fn(features, labels)
+            elif loss_fn_name == 'InfoNCELoss':
+                loss = self.loss_fn(anchor_emb, positive_emb)
             else:
                 loss = self.loss_fn(anchor_emb, positive_emb)
 

@@ -24,10 +24,12 @@ import matplotlib.pyplot as plt
 # Configuration
 ENV_NAME = "pendulum"
 SEGMENT_LENGTH = 32
-NUM_SEGMENTS_PER_CONTEXT = 50
+NUM_SEGMENTS_PER_CONTEXT = 100  # More data per context
 LATENT_DIM = 64
-NUM_EPOCHS = 10
-BATCH_SIZE = 32
+NUM_EPOCHS = 50  # More epochs for convergence
+BATCH_SIZE = 64  # Larger batch for better contrastive learning
+LEARNING_RATE = 1e-3  # Higher LR with warmup
+TEMPERATURE = 0.1  # Slightly higher temp for stability
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 print("="*80)
@@ -54,9 +56,9 @@ from src.data import TrajectoryCollector, TrajectoryDataset, get_context_distrib
 train_contexts = get_context_distributions(ENV_NAME, split='train')
 print(f"Available training contexts: {len(train_contexts)}")
 
-# Use subset for faster demo
-train_contexts = train_contexts[:5]
-print(f"Using {len(train_contexts)} contexts for demo")
+# Use more contexts for better learning
+train_contexts = train_contexts[:10]  # 10 contexts instead of 5
+print(f"Using {len(train_contexts)} contexts")
 
 collector = TrajectoryCollector(
     env_name=ENV_NAME,
@@ -88,8 +90,8 @@ input_dim = obs_dim + action_dim
 
 print(f"Input dimension: {input_dim} (obs: {obs_dim}, action: {action_dim})")
 
-# Create dataset
-dataset = TrajectoryDataset(segments)
+# Create dataset with augmentation for better positive pairs
+dataset = TrajectoryDataset(segments, augmentation="noise")
 
 # Split train/val
 train_size = int(0.8 * len(dataset))
@@ -99,9 +101,9 @@ train_dataset, val_dataset = torch.utils.data.random_split(
     generator=torch.Generator().manual_seed(42)
 )
 
-# Create data loaders
+# Create data loaders with more workers
 train_loader = torch.utils.data.DataLoader(
-    train_dataset, batch_size=BATCH_SIZE, shuffle=True
+    train_dataset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True
 )
 val_loader = torch.utils.data.DataLoader(
     val_dataset, batch_size=BATCH_SIZE, shuffle=False
@@ -110,21 +112,21 @@ val_loader = torch.utils.data.DataLoader(
 print(f"Training samples: {len(train_dataset)}, Validation samples: {len(val_dataset)}")
 
 # Create encoder
-from src.models import LSTMEncoder, InfoNCELoss
+from src.models import LSTMEncoder, SupConLoss
 
 encoder = LSTMEncoder(
     input_dim=input_dim,
-    hidden_dim=128,
+    hidden_dim=256,  # Larger hidden dim
     num_layers=2,
     latent_dim=LATENT_DIM,
-    dropout=0.1,
+    dropout=0.2,  # More dropout for regularization
     bidirectional=True
 )
 
 print(f"Encoder parameters: {sum(p.numel() for p in encoder.parameters()):,}")
 
-# Create loss function and trainer
-loss_fn = InfoNCELoss(temperature=0.07)
+# Create loss function - use SupConLoss for better multi-positive handling
+loss_fn = SupConLoss(temperature=TEMPERATURE)
 
 from src.training import EncoderTrainer
 
@@ -133,8 +135,8 @@ trainer = EncoderTrainer(
     loss_fn=loss_fn,
     train_loader=train_loader,
     val_loader=val_loader,
-    learning_rate=3e-4,
-    weight_decay=1e-5,
+    learning_rate=LEARNING_RATE,
+    weight_decay=1e-4,  # More regularization
     device=DEVICE,
     log_dir=None,
     checkpoint_dir=None
