@@ -1,4 +1,4 @@
-# Contrastive Trajectory Encoders for Zero-Shot Adaptation in CMDPs
+# Contrastive Trajectory Encode for Zero-Shot Adaptation in CMDPs
 
 A research framework for learning context-aware RL policies through self-supervised contrastive learning on trajectory dynamics.
 
@@ -8,7 +8,7 @@ This project implements a two-phase training pipeline:
 - **Phase 1 (The "Eye")**: Learn trajectory embeddings via contrastive learning (SupConLoss)
 - **Phase 2 (The "Brain")**: Train context-conditional policies using the learned embeddings
 
-## Latest Results (January 19, 2026)
+## Latest Results (January 19, 2026) 
 
 ### Embedding Visualization
 
