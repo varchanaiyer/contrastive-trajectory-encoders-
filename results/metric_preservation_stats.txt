@@ -1,0 +1,51 @@
+============================================================
+METRIC PRESERVATION ANALYSIS RESULTS
+============================================================
+
+BEST FIT MODEL:
+------------------------------------------------------------
+Model Type:           POLYNOMIAL
+R² Score:               0.9831
+Equation:             y = -0.2201x² + 1.3207x + -0.1334
+
+
+CORRELATION METRICS:
+------------------------------------------------------------
+Spearman Correlation:   0.8453  (p = 2.80e-13)
+Pearson Correlation:    0.7735  (p = 4.70e-10)
+
+Note: Spearman measures monotonic relationship (rank-based).
+      Pearson measures linear relationship.
+      High Spearman + Low Pearson = non-linear monotonic relationship.
+
+
+MODEL COMPARISON (R² Scores):
+------------------------------------------------------------
+  Polynomial    R² =  0.9831  y = -0.2201x² + 1.3207x + -0.1334 <-- BEST
+  Saturation    R² =  0.9109  y = 2.4666*(1 - exp(-1.2107*x)) + -0.6844
+  Logarithmic   R² =  0.8286  y = 0.6474*log(x) + 1.0085
+  Power         R² =  0.7346  y = 1.0169*x^0.4568
+  Sqrt          R² =  0.7292  y = 0.9774*sqrt(x) + 0.0051
+  Linear        R² =  0.5983  y = 0.3243x + 0.6715
+
+
+INTERPRETATION:
+------------------------------------------------------------
+✓ EXCELLENT: Strong metric preservation (ρ > 0.8)
+  The encoder successfully preserves distance relationships.
+
+Relationship Type: POLYNOMIAL
+  Note: The relationship is non-linear. This is normal and
+  can indicate that the encoder has learned a compressed or
+  saturating representation of the parameter space.
+
+============================================================
+WHAT THIS MEANS:
+------------------------------------------------------------
+Metric preservation measures whether the encoder maintains
+the neighborhood structure: contexts with similar parameters
+should produce similar embeddings.
+
+A strong monotonic correlation (Spearman > 0.8) indicates
+successful learning, even if the relationship is non-linear.
+============================================================

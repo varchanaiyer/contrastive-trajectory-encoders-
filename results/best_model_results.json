@@ -1,0 +1,85 @@
+{
+  "model": "best_model.zip",
+  "overall": {
+    "mean_reward": -563.5742980957032,
+    "std_reward": 362.8214640858619
+  },
+  "interpolation": {
+    "mean_reward": -365.7928466796875
+  },
+  "extrapolation": {
+    "mean_reward": -860.2464599609375
+  },
+  "per_context": {
+    "context_0": {
+      "mean_reward": -257.6551818847656,
+      "std_reward": 305.92108154296875,
+      "context": {
+        "g": 5.25
+      }
+    },
+    "context_1": {
+      "mean_reward": -407.58489990234375,
+      "std_reward": 390.7011413574219,
+      "context": {
+        "g": 6.3
+      }
+    },
+    "context_2": {
+      "mean_reward": -270.7087707519531,
+      "std_reward": 321.6977233886719,
+      "context": {
+        "g": 7.0
+      }
+    },
+    "context_3": {
+      "mean_reward": -375.220703125,
+      "std_reward": 442.29241943359375,
+      "context": {
+        "g": 7.9
+      }
+    },
+    "context_4": {
+      "mean_reward": -446.1800842285156,
+      "std_reward": 531.8491821289062,
+      "context": {
+        "g": 8.5
+      }
+    },
+    "context_5": {
+      "mean_reward": -437.40753173828125,
+      "std_reward": 467.2508544921875,
+      "context": {
+        "g": 9.0
+      }
+    },
+    "context_6": {
+      "mean_reward": -378.2029724121094,
+      "std_reward": 421.1401672363281,
+      "context": {
+        "g": 3.0
+      }
+    },
+    "context_7": {
+      "mean_reward": -525.1644287109375,
+      "std_reward": 439.9073486328125,
+      "context": {
+        "g": 4.0
+      }
+    },
+    "context_8": {
+      "mean_reward": -1176.6739501953125,
+      "std_reward": 165.25254821777344,
+      "context": {
+        "g": 12.0
+      }
+    },
+    "context_9": {
+      "mean_reward": -1360.9444580078125,
+      "std_reward": 119.99681091308594,
+      "context": {
+        "g": 15.0
+      }
+    }
+  }
+}

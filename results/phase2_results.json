@@ -1,0 +1,94 @@
+{
+  "overall": {
+    "mean_reward": -293.8177185058594,
+    "std_reward": 353.4714660644531,
+    "num_contexts": 10
+  },
+  "interpolation": {
+    "mean_reward": -127.90603637695312,
+    "num_contexts": 6
+  },
+  "extrapolation": {
+    "mean_reward": -542.6852416992188,
+    "num_contexts": 4
+  },
+  "per_context": {
+    "context_0": {
+      "mean_reward": "-77.36448",
+      "std_reward": "61.14331",
+      "context": {
+        "g": 5.25
+      }
+    },
+    "context_1": {
+      "mean_reward": "-123.969955",
+      "std_reward": "3.368721",
+      "context": {
+        "g": 6.3
+      }
+    },
+    "context_2": {
+      "mean_reward": "-100.83616",
+      "std_reward": "48.226234",
+      "context": {
+        "g": 7.0
+      }
+    },
+    "context_3": {
+      "mean_reward": "-121.49968",
+      "std_reward": "75.17405",
+      "context": {
+        "g": 7.9
+      }
+    },
+    "context_4": {
+      "mean_reward": "-166.86726",
+      "std_reward": "121.81966",
+      "context": {
+        "g": 8.5
+      }
+    },
+    "context_5": {
+      "mean_reward": "-176.89867",
+      "std_reward": "105.252205",
+      "context": {
+        "g": 9.0
+      }
+    },
+    "context_6": {
+      "mean_reward": "-104.43036",
+      "std_reward": "49.40138",
+      "context": {
+        "g": 3.0
+      }
+    },
+    "context_7": {
+      "mean_reward": "-77.629555",
+      "std_reward": "61.326855",
+      "context": {
+        "g": 4.0
+      }
+    },
+    "context_8": {
+      "mean_reward": "-913.9372",
+      "std_reward": "457.0644",
+      "context": {
+        "g": 12.0
+      }
+    },
+    "context_9": {
+      "mean_reward": "-1074.7439",
+      "std_reward": "537.97034",
+      "context": {
+        "g": 15.0
+      }
+    }
+  },
+  "config": {
+    "algorithm": "sac",
+    "total_timesteps": 100000,
+    "train_contexts": 10,
+    "test_contexts": 10,
+    "device": "cpu"
+  }
+}

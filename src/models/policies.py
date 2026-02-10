@@ -71,6 +71,7 @@ class ContextConditionalPolicy(BaseFeaturesExtractor):
         return self.net(combined)
 
 
+
 class ContextualMLPExtractor(BaseFeaturesExtractor):
     """
     MLP feature extractor with context conditioning.
@@ -169,6 +170,84 @@ class ContextEncoder(nn.Module):
         if self.freeze_encoder:
             self.encoder.eval()
         return self
+
+
+class LoopedContextPolicy(BaseFeaturesExtractor):
+    """
+    Looped architecture that iteratively applies the context embedding z
+    to refine an internal hidden state before producing features.
+
+    Instead of a single forward pass with [obs, z] concatenated, this policy
+    runs K iterations of a shared reasoning block:
+        h_0 = project(obs)
+        h_k = block(h_{k-1}, z)   for k = 1..K
+        output = head(h_K)
+
+    This gives the agent implicit "planning" capability — it can reason
+    about how context z should influence behavior through multiple
+    refinement steps before committing to an action.
+    """
+
+    def __init__(
+        self,
+        observation_space: gym.Space,
+        context_dim: int,
+        features_dim: int = 256,
+        hidden_dim: int = 256,
+        num_loops: int = 3,
+        normalize_context: bool = True
+    ):
+        super().__init__(observation_space, features_dim)
+
+        self.context_dim = context_dim
+        self.normalize_context = normalize_context
+        self.num_loops = num_loops
+        self.hidden_dim = hidden_dim
+
+        if isinstance(observation_space, gym.spaces.Box):
+            obs_dim = observation_space.shape[0]
+        else:
+            raise ValueError(f"Unsupported observation space: {observation_space}")
+
+        # Project raw observation into hidden space
+        self.obs_proj = nn.Sequential(
+            nn.Linear(obs_dim, hidden_dim),
+            nn.ReLU()
+        )
+
+        # Shared looped block: integrates z into hidden state each iteration
+        # Input is [h_k, z], output is updated h_{k+1}
+        self.loop_block = nn.Sequential(
+            nn.Linear(hidden_dim + context_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Linear(hidden_dim, hidden_dim),
+        )
+
+        # Layer norm applied after each loop iteration (stabilizes recurrence)
+        self.loop_norm = nn.LayerNorm(hidden_dim)
+
+        # Output head
+        self.output_head = nn.Sequential(
+            nn.Linear(hidden_dim, features_dim),
+            nn.ReLU()
+        )
+
+    def forward(self, observations: torch.Tensor, context: torch.Tensor) -> torch.Tensor:
+        if context.dim() == 1:
+            context = context.unsqueeze(0).expand(observations.shape[0], -1)
+
+        if self.normalize_context:
+            context = nn.functional.normalize(context, p=2, dim=-1)
+
+        # h_0: initial state from observation
+        h = self.obs_proj(observations)
+
+        # Iterative refinement: apply z repeatedly through shared weights
+        for _ in range(self.num_loops):
+            h = h + self.loop_block(torch.cat([h, context], dim=-1))
+            h = self.loop_norm(h)
+
+        return self.output_head(h)
 
 
 class OraclePolicy(BaseFeaturesExtractor):

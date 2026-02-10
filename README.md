@@ -102,7 +102,7 @@ python scripts/evaluate.py --policy-path experiments/policy_best.pt --encoder-pa
 
 ## Research Context
 
-This implementation is based on the principle that trajectories from the same environment (same physics parameters) should produce similar embeddings, while trajectories from different environments should be distinguishable. This enables zero-shot adaptation to novel contexts without explicit labels so the anchor and postive are closer together and negative is further apart
+This implementation is based on the principle that trajectories from the same environment (same physics parameters) should produce similar embeddings, while trajectories from different environments should be distinguishable. This enables zero-shot adaptation to novel contexts without explicit labels. The contrastive learning objective ensures that the anchor and positive embeddings are closer together while the negative embedding is further apart.
 
 ## Citation
 

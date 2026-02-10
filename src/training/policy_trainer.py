@@ -48,19 +48,46 @@ class ContextBufferWrapper(gym.Wrapper):
         # Cached context embedding
         self.current_context = None
 
+        # CARL environments need a reset to initialize observation_space
+        # Do a reset to get the proper observation space
+        initial_obs, _ = env.reset()
+
+        # Handle dict observations (CARL may return {'obs': array, ...})
+        if isinstance(initial_obs, dict):
+            initial_obs = initial_obs.get('obs', list(initial_obs.values())[0])
+        initial_obs = np.asarray(initial_obs, dtype=np.float32)
+
         # Modify observation space to include context
-        obs_dim = env.observation_space.shape[0]
+        # Use initial_obs shape as fallback if observation_space is None
+        if env.observation_space is not None and env.observation_space.shape is not None:
+            obs_dim = env.observation_space.shape[0]
+            self.original_obs_space = env.observation_space
+            low = np.concatenate([env.observation_space.low, np.full(context_encoder.encoder.latent_dim, -np.inf)])
+            high = np.concatenate([env.observation_space.high, np.full(context_encoder.encoder.latent_dim, np.inf)])
+        else:
+            # Fallback using initial observation
+            obs_dim = initial_obs.shape[0]
+            self.original_obs_space = gym.spaces.Box(
+                low=-np.inf, high=np.inf, shape=(obs_dim,), dtype=np.float32
+            )
+            low = np.full(obs_dim + context_encoder.encoder.latent_dim, -np.inf)
+            high = np.full(obs_dim + context_encoder.encoder.latent_dim, np.inf)
+
         context_dim = context_encoder.encoder.latent_dim
-        self.original_obs_space = env.observation_space
 
         # New observation space is [obs, context]
-        low = np.concatenate([env.observation_space.low, np.full(context_dim, -np.inf)])
-        high = np.concatenate([env.observation_space.high, np.full(context_dim, np.inf)])
         self.observation_space = gym.spaces.Box(low=low, high=high, dtype=np.float32)
+
+    def _extract_obs(self, obs):
+        """Extract observation array from potentially dict observation"""
+        if isinstance(obs, dict):
+            obs = obs.get('obs', list(obs.values())[0])
+        return np.asarray(obs, dtype=np.float32)
 
     def reset(self, **kwargs):
         """Reset environment and buffers"""
         obs, info = self.env.reset(**kwargs)
+        obs = self._extract_obs(obs)
 
         self.obs_buffer = [obs]
         self.action_buffer = []
@@ -100,6 +127,7 @@ class ContextBufferWrapper(gym.Wrapper):
     def step(self, action):
         """Step environment and update context"""
         obs, reward, done, truncated, info = self.env.step(action)
+        obs = self._extract_obs(obs)
 
         # Update buffers
         self.obs_buffer.append(obs)
